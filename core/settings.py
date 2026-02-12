@@ -100,9 +100,15 @@ LOGGING = {
             "handlers": ["console"],
             "propagate": False,
         },
-        # Utils logger
-        "utils": {
-            "level": os.getenv("LOGGING_LOG_LEVEL", "DEBUG"),
+        # audiences logger
+        "audiences": {
+            "level": "DEBUG" if DEBUG else "INFO",
+            "handlers": ["console"],
+            "propagate": False,
+        },
+        # integrations logger
+        "integrations": {
+            "level": "DEBUG" if DEBUG else "INFO",
             "handlers": ["console"],
             "propagate": False,
         },
@@ -180,7 +186,8 @@ INSTALLED_APPS = [
     # ------------------------------ DJANGO CLEANUP ------------------------------ #
     "django_cleanup",
     # -------------------------------- CUSTOM APPS ------------------------------- #
-    # "myapp",  # My app
+    "audiences",
+    "integrations",
 ]
 
 # ---------------------------------------------------------------------------- #
