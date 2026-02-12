@@ -29,7 +29,6 @@ COPY . .
 
 # Set permissions on entrypoint scripts (after copying code)
 RUN chmod +x /app/backend/docker/entrypoint-django.sh && \
-    chmod +x /app/backend/docker/entrypoint-worker.sh && \
-    chmod +x /app/backend/docker/entrypoint-beat.sh
+    chmod +x /app/backend/docker/entrypoint-worker.sh
 
 ENTRYPOINT ["/app/backend/docker/entrypoint-django.sh"]

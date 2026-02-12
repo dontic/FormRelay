@@ -94,12 +94,6 @@ LOGGING = {
             "handlers": ["console"],
             "propagate": False,
         },
-        # Celery beat logger
-        "celery.beat": {
-            "level": "WARNING",
-            "handlers": ["console"],
-            "propagate": False,
-        },
         # audiences logger
         "audiences": {
             "level": "DEBUG" if DEBUG else "INFO",
@@ -172,8 +166,6 @@ INSTALLED_APPS = [
     "rest_framework",  # Django REST Framework
     "drf_spectacular",  # Django Spectacular
     "django_filters",  # Django Filters
-    # ---------------------------------- CELERY ---------------------------------- #
-    "django_celery_beat",  # Celery beat
     # -------------------------------- HEALTHCHECK ------------------------------- #
     "health_check",  # required
     "health_check.db",  # stock Django health checkers
@@ -368,9 +360,6 @@ CELERY_TASK_SERIALIZER = "json"
 # Run celery tasks synchronously in DEBUG mode (no separate worker needed)
 CELERY_TASK_ALWAYS_EAGER = DEBUG
 CELERY_TASK_EAGER_PROPAGATES = DEBUG  # Propagate exceptions in eager mode
-
-# Configure Beat Periodic Tasks in the database
-CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
 
 # ---------------------------------------------------------------------------- #
