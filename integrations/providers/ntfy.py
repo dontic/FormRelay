@@ -7,6 +7,31 @@ log = logging.getLogger(__name__)
 
 DEFAULT_NTFY_SERVER = "https://ntfy.sh"
 
+SUPPORTED_LANGUAGES = ("en", "es")
+
+TRANSLATIONS = {
+    "en": {
+        "title": "New Subscriber: {email}",
+        "email": "Email",
+        "first_name": "First Name",
+        "last_name": "Last Name",
+        "phone": "Phone",
+        "message": "Message",
+        "audience": "Audience",
+        "source": "Source",
+    },
+    "es": {
+        "title": "Nuevo Suscriptor: {email}",
+        "email": "Correo",
+        "first_name": "Nombre",
+        "last_name": "Apellido",
+        "phone": "Teléfono",
+        "message": "Mensaje",
+        "audience": "Audiencia",
+        "source": "Origen",
+    },
+}
+
 
 class NtfyIntegration(BaseIntegration):
     """ntfy.sh push-notification integration — sends a notification when a new subscriber is added."""
@@ -17,11 +42,19 @@ class NtfyIntegration(BaseIntegration):
             "topic": "your-ntfy-topic",
             "server_url": "https://ntfy.sh",
             "access_token": "",
+            "language": "en",
         }
 
     def validate_config(self):
         required = ["topic"]
         return all(key in self.config for key in required)
+
+    def _get_translations(self):
+        lang = self.config.get("language", "en")
+        if lang not in SUPPORTED_LANGUAGES:
+            log.warning(f"Unsupported language '{lang}', falling back to English")
+            lang = "en"
+        return TRANSLATIONS[lang]
 
     def execute(self, subscriber, audience_settings=None):
         log.info(f"Executing ntfy notification for subscriber: {subscriber.email}")
@@ -43,15 +76,17 @@ class NtfyIntegration(BaseIntegration):
         audience_name = subscriber.audience.name if subscriber.audience else "Unknown"
         source_domain = subscriber.source.domain if subscriber.source else "N/A"
 
-        title = f"New Subscriber: {subscriber.email}"
+        t = self._get_translations()
+
+        title = t["title"].format(email=subscriber.email)
         message = (
-            f"Email:      {subscriber.email}\n"
-            f"First Name: {subscriber.first_name or '—'}\n"
-            f"Last Name:  {subscriber.last_name or '—'}\n"
-            f"Phone:      {subscriber.phone or '—'}\n"
-            f"Message:    {subscriber.message or '—'}\n"
-            f"Audience:   {audience_name}\n"
-            f"Source:     {source_domain}"
+            f"{t['email']}:      {subscriber.email}\n"
+            f"{t['first_name']}: {subscriber.first_name or '—'}\n"
+            f"{t['last_name']}:  {subscriber.last_name or '—'}\n"
+            f"{t['phone']}:      {subscriber.phone or '—'}\n"
+            f"{t['message']}:    {subscriber.message or '—'}\n"
+            f"{t['audience']}:   {audience_name}\n"
+            f"{t['source']}:     {source_domain}"
         )
 
         headers = {
