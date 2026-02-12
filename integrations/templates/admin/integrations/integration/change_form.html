@@ -4,6 +4,57 @@
 {{ block.super }}
 <script>
     window._configSchemas = {{ config_schemas|safe }};
+
+    (function() {
+        var typeSelect = document.getElementById("id_integration_type");
+        var configField = document.getElementById("id_config");
+        if (!typeSelect || !configField) return;
+
+        var schemas = window._configSchemas || {};
+
+        // Create the template display div
+        var templateDiv = document.createElement("div");
+        templateDiv.id = "config-schema-template";
+        templateDiv.style.marginTop = "6px";
+        templateDiv.style.padding = "8px 12px";
+        templateDiv.style.background = "var(--darkened-bg, #f8f8f8)";
+        templateDiv.style.border = "1px solid var(--border-color, #ddd)";
+        templateDiv.style.borderRadius = "4px";
+        templateDiv.style.fontFamily = "monospace";
+        templateDiv.style.fontSize = "12px";
+        templateDiv.style.whiteSpace = "pre-wrap";
+        templateDiv.style.color = "var(--body-quiet-color, #666)";
+        templateDiv.style.display = "none";
+
+        // Insert into the help text div for the config field
+        var helpDiv = document.getElementById("id_config_helptext");
+        if (helpDiv) {
+            helpDiv.appendChild(templateDiv);
+        } else {
+            // Fallback: insert after the config field itself
+            configField.parentNode.insertBefore(templateDiv, configField.nextSibling);
+        }
+
+        function escapeHtml(text) {
+            var d = document.createElement("div");
+            d.appendChild(document.createTextNode(text));
+            return d.innerHTML;
+        }
+
+        function updateTemplate() {
+            var selectedType = typeSelect.value;
+            if (!selectedType || !schemas[selectedType] || Object.keys(schemas[selectedType]).length === 0) {
+                templateDiv.style.display = "none";
+                return;
+            }
+            templateDiv.style.display = "block";
+            templateDiv.innerHTML =
+                '<strong style="color:var(--body-quiet-color, #333);font-family:sans-serif;font-size:12px;">Expected config format:</strong>\n' +
+                escapeHtml(JSON.stringify(schemas[selectedType], null, 2));
+        }
+
+        typeSelect.addEventListener("change", updateTemplate);
+        updateTemplate();
+    })();
 </script>
 {% endblock %}
-

@@ -15,9 +15,6 @@ class IntegrationAdmin(admin.ModelAdmin):
     search_fields = ["name"]
     readonly_fields = ["created_at", "updated_at"]
 
-    class Media:
-        js = ("integrations/js/config_schema.js",)
-
     def get_urls(self):
         custom_urls = [
             path(
