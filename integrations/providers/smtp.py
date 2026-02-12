@@ -51,6 +51,8 @@ class SMTPIntegration(BaseIntegration):
             "from_email": "notifications@example.com",
             "to_email": "admin@example.com",
             "language": "en",
+            "subject": "",
+            "heading": "",
         }
 
     def validate_config(self):
@@ -90,13 +92,21 @@ class SMTPIntegration(BaseIntegration):
 
         # Build the email
         msg = MIMEMultipart("alternative")
-        msg["Subject"] = t["subject"].format(email=subscriber.email)
+        custom_subject = self.config.get("subject")
+        msg["Subject"] = (
+            custom_subject.format(email=subscriber.email)
+            if custom_subject
+            else t["subject"].format(email=subscriber.email)
+        )
         msg["From"] = from_email
         msg["To"] = to_email
 
+        custom_heading = self.config.get("heading")
+        heading = custom_heading if custom_heading else t["heading"]
+
         # Plain-text body
         text_body = (
-            f"{t['notification']}\n"
+            f"{heading}\n"
             f"---------------------------\n"
             f"{t['email']}:      {subscriber.email}\n"
             f"{t['first_name']}: {subscriber.first_name or '—'}\n"
@@ -111,7 +121,7 @@ class SMTPIntegration(BaseIntegration):
         html_body = f"""\
 <html>
 <body style="font-family: sans-serif; color: #333;">
-  <h2>{t['heading']}</h2>
+  <h2>{heading}</h2>
   <table style="border-collapse: collapse;">
     <tr><td style="padding: 4px 12px; font-weight: bold;">{t['email']}</td><td>{subscriber.email}</td></tr>
     <tr><td style="padding: 4px 12px; font-weight: bold;">{t['first_name']}</td><td>{subscriber.first_name or '—'}</td></tr>

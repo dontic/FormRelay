@@ -43,6 +43,7 @@ class NtfyIntegration(BaseIntegration):
             "server_url": "https://ntfy.sh",
             "access_token": "",
             "language": "en",
+            "title": "",
         }
 
     def validate_config(self):
@@ -78,7 +79,12 @@ class NtfyIntegration(BaseIntegration):
 
         t = self._get_translations()
 
-        title = t["title"].format(email=subscriber.email)
+        custom_title = self.config.get("title")
+        title = (
+            custom_title.format(email=subscriber.email)
+            if custom_title
+            else t["title"].format(email=subscriber.email)
+        )
         message = (
             f"{t['email']}:      {subscriber.email}\n"
             f"{t['first_name']}: {subscriber.first_name or '—'}\n"
