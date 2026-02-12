@@ -1,4 +1,5 @@
 from integrations.providers.loops import LoopsIntegration
+from integrations.providers.smtp import SMTPIntegration
 
 # ... import others
 
@@ -8,6 +9,7 @@ class IntegrationRegistry:
 
     _integrations = {
         "loops": LoopsIntegration,
+        "smtp": SMTPIntegration,
         # Add more here
     }
 
