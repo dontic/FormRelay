@@ -36,9 +36,6 @@ services:
     volumes:
       # Persistent data storage - database files stored on host
       - ./postgresdata:/var/lib/postgresql/data
-      # Initialization script - runs once on first container startup
-      # Used for database provisioning (extensions, initial setup, etc.)
-      - ./provision_postgres.sql:/docker-entrypoint-initdb.d/provision_postgres.sql
     # Uncomment to expose PostgreSQL port for external access
     # (e.g., for database GUI tools or external clients)
     # ports:
