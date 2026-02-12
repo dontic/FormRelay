@@ -17,6 +17,7 @@
 #    - [ ] Set DJANGO_DEBUG=False
 #    - [ ] Update DJANGO_ALLOWED_HOSTS and DJANGO_ALLOWED_ORIGINS for your domain
 #    - [ ] Change POSTGRES_PASSWORD to something secure
+#    - [ ] Change the default superuser credentials (DJANGO_SUPERUSER_*)
 #    - [ ] Update the image name to your registry
 # ===========================================================================
 
@@ -44,6 +45,9 @@ x-django-app: &django-app
     POSTGRES_PASSWORD: django
     POSTGRES_HOST: postgres
     POSTGRES_PORT: "5432"
+    # ── Default Superuser (created on first startup) ────────────────────
+    DJANGO_SUPERUSER_USERNAME: admin
+    DJANGO_SUPERUSER_PASSWORD: admin
     # ── Redis (internal defaults — no need to change unless using an external Redis server) ────────────────────
     REDIS_HOST: redis
     REDIS_PORT: "6379"
