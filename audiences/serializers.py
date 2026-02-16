@@ -1,5 +1,13 @@
 from rest_framework import serializers
+from rest_framework.exceptions import APIException
+
 from audiences.models import Audience, Source, Subscriber
+
+
+class ConflictError(APIException):
+    status_code = 409
+    default_detail = "This resource already exists."
+    default_code = "conflict"
 
 
 class AudienceSerializer(serializers.ModelSerializer):
@@ -41,9 +49,7 @@ class SubscriberSerializer(serializers.ModelSerializer):
         if not request:
             return None
 
-        origin = request.META.get("HTTP_ORIGIN") or request.META.get(
-            "HTTP_REFERER", ""
-        )
+        origin = request.META.get("HTTP_ORIGIN") or request.META.get("HTTP_REFERER", "")
         if not origin:
             return None
 
@@ -57,6 +63,25 @@ class SubscriberSerializer(serializers.ModelSerializer):
 
         source, _ = Source.objects.get_or_create(domain=domain)
         return source
+
+    def validate(self, attrs):
+        audience_data = attrs.get("audience")
+        email = attrs.get("email")
+
+        if audience_data and email:
+            try:
+                audience = Audience.objects.get(
+                    name=audience_data["name"],
+                    audience_type=audience_data["audience_type"],
+                )
+                if Subscriber.objects.filter(audience=audience, email=email).exists():
+                    raise ConflictError(
+                        f"A subscriber with email '{email}' already exists in this audience."
+                    )
+            except Audience.DoesNotExist:
+                pass  # New audience, no duplicate possible
+
+        return attrs
 
     def create(self, validated_data):
         audience_data = validated_data.pop("audience")
@@ -77,4 +102,3 @@ class SubscriberSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
-
