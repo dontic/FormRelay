@@ -49,7 +49,7 @@ class SMTPIntegration(BaseIntegration):
             "password": "your-smtp-password",
             "security": "starttls",
             "from_email": "notifications@example.com",
-            "to_email": "admin@example.com",
+            "to_email": "admin@example.com",  # comma-separated for multiple recipients
             "language": "en",
             "subject": "",
             "heading": "",
@@ -81,9 +81,13 @@ class SMTPIntegration(BaseIntegration):
         from_email = self.config["from_email"]
         to_email = self.config["to_email"]
 
-        # Allow audience-level overrides
         if audience_settings:
             to_email = audience_settings.get("to_email", to_email)
+
+        recipients = [addr.strip() for addr in to_email.split(",") if addr.strip()]
+        if not recipients:
+            log.error("No valid recipient addresses provided")
+            raise ValueError("No valid recipient addresses provided")
 
         audience_name = subscriber.audience.name if subscriber.audience else "Unknown"
         source_domain = subscriber.source.domain if subscriber.source else "N/A"
@@ -99,7 +103,7 @@ class SMTPIntegration(BaseIntegration):
             else t["subject"].format(email=subscriber.email)
         )
         msg["From"] = from_email
-        msg["To"] = to_email
+        msg["To"] = ", ".join(recipients)
 
         custom_heading = self.config.get("heading")
         heading = custom_heading if custom_heading else t["heading"]
@@ -137,7 +141,7 @@ class SMTPIntegration(BaseIntegration):
         msg.attach(MIMEText(text_body, "plain"))
         msg.attach(MIMEText(html_body, "html"))
 
-        log.debug(f"Sending SMTP notification to {to_email} via {host}:{port}")
+        log.debug(f"Sending SMTP notification to {recipients} via {host}:{port}")
 
         try:
             if security == "ssl":
@@ -150,10 +154,10 @@ class SMTPIntegration(BaseIntegration):
             with server:
                 if username and password:
                     server.login(username, password)
-                server.sendmail(from_email, [to_email], msg.as_string())
+                server.sendmail(from_email, recipients, msg.as_string())
         except smtplib.SMTPException as exc:
             log.error(f"SMTP error: {exc}")
             raise ValueError(f"SMTP error: {exc}") from exc
 
-        log.info(f"SMTP notification sent to {to_email}")
-        return {"success": True, "to_email": to_email}
+        log.info(f"SMTP notification sent to {recipients}")
+        return {"success": True, "to_email": recipients}
