@@ -47,7 +47,7 @@ class SMTPIntegration(BaseIntegration):
             "port": 587,
             "username": "your-smtp-username",
             "password": "your-smtp-password",
-            "use_tls": True,
+            "security": "starttls",
             "from_email": "notifications@example.com",
             "to_email": "admin@example.com",
             "language": "en",
@@ -77,7 +77,7 @@ class SMTPIntegration(BaseIntegration):
         port = int(self.config.get("port", 587))
         username = self.config.get("username")
         password = self.config.get("password")
-        use_tls = self.config.get("use_tls", True)
+        security = self.config.get("security", "starttls").lower()
         from_email = self.config["from_email"]
         to_email = self.config["to_email"]
 
@@ -140,9 +140,14 @@ class SMTPIntegration(BaseIntegration):
         log.debug(f"Sending SMTP notification to {to_email} via {host}:{port}")
 
         try:
-            with smtplib.SMTP(host, port) as server:
-                if use_tls:
+            if security == "ssl":
+                server = smtplib.SMTP_SSL(host, port)
+            else:
+                server = smtplib.SMTP(host, port)
+                if security == "starttls":
                     server.starttls()
+
+            with server:
                 if username and password:
                     server.login(username, password)
                 server.sendmail(from_email, [to_email], msg.as_string())
