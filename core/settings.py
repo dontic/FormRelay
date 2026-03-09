@@ -119,15 +119,21 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 # Hosts
 ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",")
 
+DJANGO_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("DJANGO_ALLOWED_ORIGINS", "").split(",")
+    if origin.strip()
+]
+
 # CSRF
-CSRF_TRUSTED_ORIGINS = os.getenv("DJANGO_ALLOWED_ORIGINS", "").split(",")
+CSRF_TRUSTED_ORIGINS = DJANGO_ALLOWED_ORIGINS
 CSRF_COOKIE_NAME = os.getenv("DJANGO_CSRF_COOKIE_NAME", "csrftoken")
 CSRF_COOKIE_DOMAIN = os.getenv("DJANGO_CSRF_COOKIE_DOMAIN")
 CSRF_COOKIE_SAMESITE = "None"  # Allow the cookie on different domains
 CSRF_COOKIE_SECURE = True
 
 # CORS settings
-CORS_ORIGIN_WHITELIST = os.getenv("DJANGO_ALLOWED_ORIGINS", "").split(",")
+CORS_ALLOWED_ORIGINS = DJANGO_ALLOWED_ORIGINS
 CORS_ALLOW_METHODS = ["DELETE", "GET", "OPTIONS", "PATCH", "POST", "PUT"]
 CORS_ALLOW_HEADERS = [
     "accept",
@@ -186,10 +192,10 @@ INSTALLED_APPS = [
 #                                  MIDDLEWARE                                  #
 # ---------------------------------------------------------------------------- #
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",  # Django CORS Headers
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",  # Whitenoise
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "corsheaders.middleware.CorsMiddleware",  # Django CORS Headers
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
