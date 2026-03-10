@@ -18,9 +18,9 @@ drf-spectacular = "*"
 requests = "*"
 django-filter = "*"
 drf-nested-routers = "*"
-django-health-check = "*"
 django-cleanup = "*"
 django-solo = "*"
+django-health-check = "~=3.16"
 
 [dev-packages]
 celery-types = "*"
