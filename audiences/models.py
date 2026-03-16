@@ -24,6 +24,7 @@ class Audience(models.Model):
     audience_type = models.CharField(max_length=50, choices=AUDIENCE_TYPES)
     description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
+    allow_duplicates = models.BooleanField(default=True)
 
     # Meta
     created_at = models.DateTimeField(auto_now_add=True)
@@ -57,7 +58,6 @@ class Subscriber(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = [["audience", "email"]]
         indexes = [
             models.Index(fields=["email"]),
             models.Index(fields=["created_at"]),

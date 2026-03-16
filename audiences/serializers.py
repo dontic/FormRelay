@@ -74,7 +74,23 @@ class SubscriberSerializer(serializers.ModelSerializer):
                     name=audience_data["name"],
                     audience_type=audience_data["audience_type"],
                 )
-                if Subscriber.objects.filter(audience=audience, email=email).exists():
+                qs = Subscriber.objects.filter(audience=audience, email=email)
+
+                # Always reject exact duplicates (all subscriber fields match)
+                exact_duplicate = qs.filter(
+                    first_name=attrs.get("first_name", ""),
+                    last_name=attrs.get("last_name", ""),
+                    phone=attrs.get("phone", ""),
+                    message=attrs.get("message", ""),
+                    custom_data=attrs.get("custom_data", {}),
+                ).exists()
+                if exact_duplicate:
+                    raise ConflictError(
+                        f"An identical submission already exists for '{email}' in this audience."
+                    )
+
+                # When duplicates are not allowed, also reject on email alone
+                if not audience.allow_duplicates and qs.exists():
                     raise ConflictError(
                         f"A subscriber with email '{email}' already exists in this audience."
                     )
