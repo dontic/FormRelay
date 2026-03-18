@@ -96,7 +96,7 @@ class SMTPIntegration(BaseIntegration):
 
         # Build the email
         msg = MIMEMultipart("alternative")
-        custom_subject = self.config.get("subject")
+        custom_subject = (audience_settings or {}).get("subject") or self.config.get("subject")
         msg["Subject"] = (
             custom_subject.format(email=subscriber.email)
             if custom_subject
@@ -105,7 +105,7 @@ class SMTPIntegration(BaseIntegration):
         msg["From"] = from_email
         msg["To"] = ", ".join(recipients)
 
-        custom_heading = self.config.get("heading")
+        custom_heading = (audience_settings or {}).get("heading") or self.config.get("heading")
         heading = custom_heading if custom_heading else t["heading"]
 
         # Plain-text body
