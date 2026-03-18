@@ -50,6 +50,7 @@ class SMTPIntegration(BaseIntegration):
             "security": "starttls",
             "from_email": "notifications@example.com",
             "to_email": "admin@example.com",  # comma-separated for multiple recipients
+            "bcc_email": "",  # comma-separated BCC recipients
             "language": "en",
             "subject": "",
             "heading": "",
@@ -81,13 +82,18 @@ class SMTPIntegration(BaseIntegration):
         from_email = self.config["from_email"]
         to_email = self.config["to_email"]
 
+        bcc_email = self.config.get("bcc_email", "")
+
         if audience_settings:
             to_email = audience_settings.get("to_email", to_email)
+            bcc_email = audience_settings.get("bcc_email", bcc_email)
 
         recipients = [addr.strip() for addr in to_email.split(",") if addr.strip()]
         if not recipients:
             log.error("No valid recipient addresses provided")
             raise ValueError("No valid recipient addresses provided")
+
+        bcc_recipients = [addr.strip() for addr in bcc_email.split(",") if addr.strip()]
 
         audience_name = subscriber.audience.name if subscriber.audience else "Unknown"
         source_domain = subscriber.source.domain if subscriber.source else "N/A"
@@ -104,6 +110,8 @@ class SMTPIntegration(BaseIntegration):
         )
         msg["From"] = from_email
         msg["To"] = ", ".join(recipients)
+        if bcc_recipients:
+            msg["Bcc"] = ", ".join(bcc_recipients)
 
         custom_heading = (audience_settings or {}).get("heading") or self.config.get("heading")
         heading = custom_heading if custom_heading else t["heading"]
@@ -154,10 +162,10 @@ class SMTPIntegration(BaseIntegration):
             with server:
                 if username and password:
                     server.login(username, password)
-                server.sendmail(from_email, recipients, msg.as_string())
+                server.sendmail(from_email, recipients + bcc_recipients, msg.as_string())
         except smtplib.SMTPException as exc:
             log.error(f"SMTP error: {exc}")
             raise ValueError(f"SMTP error: {exc}") from exc
 
         log.info(f"SMTP notification sent to {recipients}")
-        return {"success": True, "to_email": recipients}
+        return {"success": True, "to_email": recipients, "bcc_email": bcc_recipients}
