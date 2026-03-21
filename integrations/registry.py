@@ -2,6 +2,7 @@ from integrations.providers.loops import LoopsIntegration
 from integrations.providers.ntfy import NtfyIntegration
 from integrations.providers.smtp import SMTPIntegration
 from integrations.providers.mailchimp import MailchimpIntegration
+from integrations.providers.sesy import SesyIntegration
 
 # ... import others
 
@@ -14,6 +15,7 @@ class IntegrationRegistry:
         "ntfy": NtfyIntegration,
         "smtp": SMTPIntegration,
         "mailchimp": MailchimpIntegration,
+        "sesy": SesyIntegration,
         # Add more here
     }
 
